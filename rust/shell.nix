@@ -5,7 +5,8 @@
   nodeModules ? import ./nix/node/global_composition.nix { inherit pkgs; }
 }:
 let
-  rust' = (pkgs.rustChannelOf { channel = "nightly"; date = "2020-10-06";}).rust.override {
+  rust' = (pkgs.rustChannelOf { channel = "nightly"; date = "2020-12-05";}).rust.override {
+    targets = [];
     # targets = ["wasm32-unknown-unknown"];
     extensions = [
       "rust-src"
@@ -13,7 +14,7 @@ let
       "clippy-preview"
       "rust-analysis"
       "rust-std"
-      "rustfmt-preview" 
+      # "rustfmt-preview" 
     ];
   };
 in pkgs.mkShell {
@@ -23,6 +24,7 @@ in pkgs.mkShell {
     # pkgs.wasm-pack
     # pkgs.wabt
     pkgs.rustracer
+    pkgs.latest.rustChannels.stable.rustfmt-preview
     # pkgs.openssl
     # pkgs.python3
     pkgs.llvmPackages.clang-unwrapped
