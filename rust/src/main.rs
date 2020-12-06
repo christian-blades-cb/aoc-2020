@@ -20,6 +20,9 @@ fn main() {
     let day5input = parseday5("day5.input");
     println!("day5pt1: {}", day5p1(&day5input));
     println!("day5pt2: {}", day5p2(&day5input));
+    let day6input = parseday6("day6.input");
+    println!("day6pt1: {}", day6p1(&day6input));
+    println!("day6pt2: {}", day6p2(&day6input));
 }
 
 fn parseday1<P: AsRef<Path>>(p: P) -> Vec<usize> {
@@ -396,10 +399,52 @@ fn day5p2(xs: &[String]) -> usize {
         .fold((std::usize::MAX, std::usize::MIN), |(min, max), &x| {
             (std::cmp::min(min, x), std::cmp::max(max, x))
         });
-    dbg!((min, max));
     let candidates: Vec<usize> = (min..max).filter(|x| !seats.contains(x)).collect();
     *candidates
         .iter()
         .find(|&x| seats.contains(&(x + 1)) && seats.contains(&(x - 1)))
         .unwrap()
+}
+
+fn parseday6<P: AsRef<Path>>(p: P) -> Vec<Vec<String>> {
+    let mut fd = File::open(p).unwrap();
+    let mut buf = String::new();
+    fd.read_to_string(&mut buf).unwrap();
+
+    buf.split("\n\n")
+        .map(|group| group.lines().map(String::from).collect())
+        .collect()
+}
+
+fn day6p1(xs: &[Vec<String>]) -> usize {
+    use std::collections::HashSet;
+    xs.iter()
+        .map(|group| {
+            group
+                .iter()
+                .fold(HashSet::new(), |mut acc, response| {
+                    for c in response.chars() {
+                        acc.insert(c);
+                    }
+                    acc
+                })
+                .len()
+        })
+        .sum()
+}
+
+fn day6p2(xs: &[Vec<String>]) -> usize {
+    use std::collections::HashSet;
+    xs.iter()
+        .map(|group| {
+            let agreed: HashSet<char> = group[0].chars().collect();
+            group
+                .iter()
+                .fold(agreed, |acc, response| {
+                    let set: HashSet<char> = response.chars().collect();
+                    acc.intersection(&set).cloned().collect()
+                })
+                .len()
+        })
+        .sum()
 }
