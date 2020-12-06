@@ -1,3 +1,4 @@
+// use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -10,6 +11,12 @@ fn main() {
     let day2input = parseday2("day2.input");
     println!("day2p1: {}", day2p1(&day2input));
     println!("day2p2: {}", day2p2(&day2input));
+    let day3input = parseday3("day3.input");
+    println!("day3p1: {}", day3p1(&day3input));
+    println!("day3p2: {}", day3p2(&day3input));
+    let day4input = parseday4("day4.input");
+    println!("day4p1: {}", day4p1(&day4input));
+    println!("day4p2: {}", day4p2(&day4input));
 }
 
 fn parseday1<P: AsRef<Path>>(p: P) -> Vec<usize> {
@@ -121,6 +128,189 @@ fn day2p2(xs: &[(PasswordRule, String)]) -> usize {
                 (false, true) => true,
                 _ => false,
             }
+        })
+        .count()
+}
+
+fn parseday3<P: AsRef<Path>>(p: P) -> ndarray::Array2<u8> {
+    let fd = File::open(p).unwrap();
+    let reader = BufReader::new(fd);
+    let mut n = 0;
+    let matrix = reader.lines().fold(Vec::new(), |mut acc, line| {
+        let line = line.unwrap();
+        n = line.len();
+        for c in line.chars() {
+            let x = match c {
+                '.' => 0u8,
+                '#' => 1,
+                _ => panic!("unexpected character {}", c),
+            };
+            acc.push(x);
+        }
+        acc
+    });
+    let m = matrix.len() / n;
+    ndarray::Array2::from_shape_vec((m, n), matrix).unwrap()
+}
+
+fn collisions(slope: (usize, usize), matrix: &ndarray::Array2<u8>) -> usize {
+    let (modx, mody) = slope;
+    let n_columns = matrix.shape()[1];
+    let n_rows = matrix.shape()[0];
+    let mut x = 0;
+    let mut y = 0;
+    let mut trees = 0;
+    loop {
+        x += modx;
+        y += mody;
+        if y > n_rows - 1 {
+            return trees;
+        }
+        let coord = (y, x % n_columns);
+        trees += *matrix.get(coord).unwrap() as usize;
+    }
+}
+
+fn day3p1(matrix: &ndarray::Array2<u8>) -> usize {
+    let slope = (3, 1);
+    collisions(slope, matrix)
+}
+
+fn day3p2(matrix: &ndarray::Array2<u8>) -> usize {
+    let slopes = &[(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
+    slopes.iter().map(|&s| collisions(s, matrix)).product()
+}
+
+#[derive(Default)]
+struct Record {
+    byr: Option<String>,
+    iyr: Option<String>,
+    eyr: Option<String>,
+    hgt: Option<String>,
+    hcl: Option<String>,
+    ecl: Option<String>,
+    pid: Option<String>,
+    cid: Option<String>,
+}
+
+fn parseday4<P: AsRef<Path>>(p: P) -> Vec<Record> {
+    let mut fd = File::open(p).unwrap();
+    let mut buf = String::new();
+    fd.read_to_string(&mut buf).unwrap();
+
+    let mut acc = Vec::new();
+    for record in buf.split("\n\n") {
+        let mut passport = Record::default();
+        for item in record.split_whitespace() {
+            let mut pair = item.splitn(2, ':').map(String::from);
+            match pair.next().unwrap().as_str() {
+                "byr" => passport.byr = Some(pair.next().unwrap().into()),
+                "iyr" => passport.iyr = Some(pair.next().unwrap().into()),
+                "eyr" => passport.eyr = Some(pair.next().unwrap().into()),
+                "hgt" => passport.hgt = Some(pair.next().unwrap().into()),
+                "hcl" => passport.hcl = Some(pair.next().unwrap().into()),
+                "ecl" => passport.ecl = Some(pair.next().unwrap().into()),
+                "pid" => passport.pid = Some(pair.next().unwrap().into()),
+                "cid" => passport.cid = Some(pair.next().unwrap().into()),
+                _ => {}
+            }
+        }
+        acc.push(passport);
+    }
+    acc
+}
+
+fn day4p1(xs: &[Record]) -> usize {
+    xs.iter()
+        .filter(|x| {
+            x.byr.is_some()
+                && x.iyr.is_some()
+                && x.eyr.is_some()
+                && x.hgt.is_some()
+                && x.hcl.is_some()
+                && x.ecl.is_some()
+                && x.pid.is_some()
+        })
+        .count()
+}
+
+fn day4p2(xs: &[Record]) -> usize {
+    let hex_re = regex::Regex::new(r"^#[0-9a-f]{6}$").unwrap();
+    let pid_re = regex::Regex::new(r"^\d{9}$").unwrap();
+    xs.iter()
+        .filter(|record| {
+            let byr = {
+                if let Some(byr) = &record.byr {
+                    let byr = byr.parse::<usize>().unwrap_or(0);
+                    byr >= 1920 && byr <= 2002
+                } else {
+                    false
+                }
+            };
+
+            let iyr = {
+                record.iyr.as_ref().map(|iyr| {
+                    let iyr = iyr.parse::<usize>().unwrap_or(0);
+                    iyr >= 2010 && iyr <= 2020
+                })
+            }
+            .unwrap_or(false);
+
+            let eyr = record
+                .eyr
+                .as_ref()
+                .map(|eyr| {
+                    let eyr = eyr.parse::<usize>().unwrap_or(0);
+                    eyr >= 2020 && eyr <= 2030
+                })
+                .unwrap_or(false);
+
+            let hgt = {
+                record.hgt.as_ref().map(|hgt| {
+                    let n = hgt.len();
+                    match (hgt.ends_with("in"), hgt.ends_with("cm")) {
+                        (true, false) => hgt[0..n - 2]
+                            .parse::<usize>()
+                            .map(|v| v >= 59 && v <= 76)
+                            .unwrap_or(false),
+                        (false, true) => hgt[0..n - 2]
+                            .parse::<usize>()
+                            .map(|v| v >= 150 && v <= 193)
+                            .unwrap_or(false),
+                        _ => false,
+                    }
+                })
+            }
+            .unwrap_or(false);
+
+            let hcl = record
+                .hcl
+                .as_ref()
+                .map(|hcl| hex_re.is_match(hcl))
+                .unwrap_or(false);
+
+            let ecl = record
+                .ecl
+                .as_ref()
+                .map(|ecl| match ecl.as_str() {
+                    "amb" => true,
+                    "blu" => true,
+                    "brn" => true,
+                    "gry" => true,
+                    "grn" => true,
+                    "hzl" => true,
+                    "oth" => true,
+                    _ => false,
+                })
+                .unwrap_or(false);
+
+            let pid = record
+                .pid
+                .as_ref()
+                .map(|pid| pid_re.is_match(pid))
+                .unwrap_or(false);
+
+            byr && iyr && eyr && hgt && hcl && ecl && pid
         })
         .count()
 }
