@@ -4,6 +4,7 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod day7;
 
 fn main() {
     let day1input = day1::parseday1("day1.input");
@@ -24,4 +25,6 @@ fn main() {
     let day6input = day6::parseday6("day6.input");
     println!("day6p1: {}", day6::day6p1(&day6input));
     println!("day6p2: {}", day6::day6p2(&day6input));
+    let day7input = day7::parseday7("day7.input");
+    println!("day7p1: {}", day7::day7p1(&day7input));
 }
