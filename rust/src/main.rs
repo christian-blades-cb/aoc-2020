@@ -27,4 +27,5 @@ fn main() {
     println!("day6p2: {}", day6::day6p2(&day6input));
     let day7input = day7::parseday7("day7.input");
     println!("day7p1: {}", day7::day7p1(&day7input));
+    println!("day7p2: {}", day7::day7p2(&day7input));
 }

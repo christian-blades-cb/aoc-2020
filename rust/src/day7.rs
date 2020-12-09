@@ -94,9 +94,40 @@ pub fn day7p1(xs: &[BagRules]) -> usize {
 }
 
 pub fn day7p2(xs: &[BagRules]) -> usize {
-    deep_count("shiny gold", todo!())
-}
+    use topological_sort::TopologicalSort;
+    let (rules, mut topology) = xs.iter().fold(
+        (HashMap::new(), TopologicalSort::<&str>::new()),
+        |(mut rules, mut topology), BagRules { container, holds }| {
+            rules.insert(container, holds);
+            if let Some(bags) = holds {
+                for (_n, prec) in bags {
+                    topology.add_dependency(prec.as_str(), container.as_str());
+                }
+            }
+            (rules, topology)
+        },
+    );
 
-fn deep_count(container: &str, rules: &HashMap<Bag, Vec<(usize, Bag)>>) -> usize {
-    todo!()
+    let mut resolved = HashMap::<&str, usize>::new();
+    while let Some(bag) = topology.pop() {
+        let sz = 1 + rules
+            .get(&bag.to_string())
+            .unwrap()
+            .as_ref()
+            .map(|holds| {
+                holds
+                    .iter()
+                    .map(|(n, x)| resolved.get(x.as_str()).unwrap() * n)
+                    .sum()
+            })
+            .unwrap_or(0);
+        resolved.insert(bag, sz);
+        if bag == "shiny gold" {
+            // number of bags INSIDE the gold bag, not number of bags total
+            return *resolved.get("shiny gold").unwrap() - 1;
+        }
+    }
+    assert!(topology.is_empty());
+
+    panic!("expected shiny gold bag in the topology");
 }
