@@ -1,3 +1,4 @@
+use std::fs::File;
 mod day1;
 mod day2;
 mod day3;
@@ -5,6 +6,7 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
 
 fn main() {
     let day1input = day1::parseday1("day1.input");
@@ -28,4 +30,7 @@ fn main() {
     let day7input = day7::parseday7("day7.input");
     println!("day7p1: {}", day7::day7p1(&day7input));
     println!("day7p2: {}", day7::day7p2(&day7input));
+    let day8input = day8::parseday8(File::open("day8.input").unwrap());
+    println!("day8p1: {}", day8::part1(&day8input));
+    println!("day8p2: {}", day8::part2(&day8input));
 }
