@@ -1,5 +1,6 @@
 use std::fs::File;
 mod day1;
+mod day10;
 mod day2;
 mod day3;
 mod day4;
@@ -37,4 +38,7 @@ fn main() {
     let day9input = day9::parse_input(File::open("day9.input").unwrap());
     println!("day9p1: {}", day9::part1(&day9input));
     println!("day9p2: {}", day9::part2(&day9input));
+    let day10input = day10::parse_input(File::open("day10.input").unwrap());
+    println!("day10p1: {}", day10::part1(&day10input));
+    println!("day10p2: {}", day10::part2(&day10input));
 }
