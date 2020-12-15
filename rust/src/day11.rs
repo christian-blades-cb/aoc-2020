@@ -4,7 +4,21 @@ use std::hash::{Hash, Hasher};
 use std::io::prelude::*;
 use std::io::BufReader;
 
-pub fn parse_input<R: Read>(r: R) -> Array2<char> {
+type Slope = (isize, isize);
+type Matrix = Array2<char>;
+type Pos = (usize, usize);
+const DIRECTIONS: &[(isize, isize)] = &[
+    (-1, -1),
+    (-1, 0),
+    (-1, 1),
+    (1, -1),
+    (1, 0),
+    (1, 1),
+    (0, -1),
+    (0, 1),
+];
+
+pub fn parse_input<R: Read>(r: R) -> Matrix {
     let reader = BufReader::new(r);
     let (n, matrix) = reader.lines().fold((0, Vec::new()), |(_, mut acc), line| {
         let line = line.unwrap();
@@ -25,16 +39,20 @@ pub fn part1(matrix: &Array2<char>) -> usize {
         .count()
 }
 
+pub fn part2(matrix: &Matrix) -> usize {
+    coalesce(matrix, transform2)
+        .iter()
+        .filter(|&&x| x == '#')
+        .count()
+}
+
 fn hash_matrix(matrix: &Array2<char>) -> u64 {
     let mut hasher = DefaultHasher::new();
     (matrix).hash(&mut hasher);
     hasher.finish()
 }
 
-fn coalesce<T: Fn(&Array2<char>) -> Array2<char>>(
-    matrix: &Array2<char>,
-    transformation: T,
-) -> Array2<char> {
+fn coalesce<T: Fn(&Matrix) -> Matrix>(matrix: &Matrix, transformation: T) -> Array2<char> {
     let mut matrix = Clone::clone(matrix);
     loop {
         let old_hash = hash_matrix(&matrix);
@@ -46,25 +64,7 @@ fn coalesce<T: Fn(&Array2<char>) -> Array2<char>>(
     }
 }
 
-pub fn part2(matrix: &Array2<char>) -> usize {
-    coalesce(matrix, transform2)
-        .iter()
-        .filter(|&&x| x == '#')
-        .count()
-}
-
 fn transform2(matrix: &Matrix) -> Matrix {
-    const DIRECTIONS: &[(isize, isize)] = &[
-        (-1, -1),
-        (-1, 0),
-        (-1, 1),
-        (1, -1),
-        (1, 0),
-        (1, 1),
-        (0, -1),
-        (0, 1),
-    ];
-
     let transformed: Vec<char> = matrix
         .indexed_iter()
         .map(|(coord, &c)| {
@@ -92,10 +92,6 @@ fn transform2(matrix: &Matrix) -> Matrix {
     Array2::from_shape_vec(matrix.dim(), transformed).unwrap()
 }
 
-type Slope = (isize, isize);
-type Matrix = Array2<char>;
-type Pos = (usize, usize);
-
 fn seen_on_slope(coord: Pos, slope: Slope, matrix: &Matrix) -> char {
     let mut target = coord;
     while target.0 as isize + slope.0 >= 0 && target.1 as isize + slope.1 >= 0 {
@@ -112,21 +108,11 @@ fn seen_on_slope(coord: Pos, slope: Slope, matrix: &Matrix) -> char {
     '.'
 }
 
-fn transform(matrix: &Array2<char>) -> Array2<char> {
-    const ADJACENTS: &[(isize, isize)] = &[
-        (-1, -1),
-        (-1, 0),
-        (-1, 1),
-        (1, -1),
-        (1, 0),
-        (1, 1),
-        (0, -1),
-        (0, 1),
-    ];
+fn transform(matrix: &Matrix) -> Matrix {
     let transformed: Vec<char> = matrix
         .indexed_iter()
         .map(|((x, y), c)| {
-            let count: usize = ADJACENTS
+            let count: usize = DIRECTIONS
                 .iter()
                 .filter_map(|(mod_x, mod_y)| {
                     if x as isize + mod_x < 0 {
