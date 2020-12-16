@@ -68,8 +68,34 @@ pub fn part1(xs: &[Move]) -> usize {
             }
             _ => unreachable!(),
         };
-        dbg!(Move(*c, *n), &coord, &facing);
     }
 
     coord.0.abs() as usize + coord.1.abs() as usize
+}
+
+pub fn part2(xs: &[Move]) -> usize {
+    let mut ship_coord = (0, 0);
+    let mut waypoint = (10, 1);
+
+    for Move(c, n) in xs {
+        match (c, n) {
+            ('L', 90) | ('R', 270) => waypoint = (0 - waypoint.1, waypoint.0),
+            ('L', 180) | ('R', 180) => waypoint = (0 - waypoint.0, 0 - waypoint.1),
+            ('L', 270) | ('R', 90) => waypoint = (waypoint.1, 0 - waypoint.0),
+            ('L', _) | ('R', _) => unreachable!(),
+            ('N', n) => waypoint = (waypoint.0, waypoint.1 + n),
+            ('S', n) => waypoint = (waypoint.0, waypoint.1 - n),
+            ('E', n) => waypoint = (waypoint.0 + n, waypoint.1),
+            ('W', n) => waypoint = (waypoint.0 - n, waypoint.1),
+            ('F', n) => {
+                ship_coord = (
+                    ship_coord.0 + (waypoint.0 * n),
+                    ship_coord.1 + (waypoint.1 * n),
+                )
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    (ship_coord.0.abs() + ship_coord.1.abs()) as _
 }

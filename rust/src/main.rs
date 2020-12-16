@@ -48,4 +48,5 @@ fn main() {
     println!("day11p2: {}", day11::part2(&day11input));
     let day12input = day12::parse_input(File::open("day12.input").unwrap());
     println!("day12p1: {}", day12::part1(&day12input));
+    println!("day12p2: {}", day12::part2(&day12input));
 }
