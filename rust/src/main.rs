@@ -4,6 +4,7 @@ mod day10;
 mod day11;
 mod day12;
 mod day13;
+mod day14;
 mod day2;
 mod day3;
 mod day4;
@@ -53,4 +54,7 @@ fn main() {
     let day13input = day13::parse_input(File::open("day13.input").unwrap());
     println!("day13p1: {}", day13::part1(day13input.0, &day13input.1));
     println!("day13p2: {}", day13::part2(&day13input.1));
+    let day14input = day14::parse_input(File::open("day14.input").unwrap());
+    println!("day14p1: {}", day14::part1(&day14input));
+    println!("day14p2: {}", day14::part2(&day14input));
 }
