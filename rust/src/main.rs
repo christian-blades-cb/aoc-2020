@@ -6,6 +6,7 @@ mod day12;
 mod day13;
 mod day14;
 mod day15;
+mod day16;
 mod day2;
 mod day3;
 mod day4;
@@ -62,4 +63,11 @@ fn main() {
     println!("day15p1: {}", day15::part1(&day15input));
     // takes too long in debug mode and I don't feel like refactoring it to use a vec instead of a hashmap
     // println!("day15p2: {}", day15::part2(&day15input));
+    let day16input = day16::parse_input(&mut File::open("day16.input").unwrap());
+    let (fields, my_ticket, adjacent_tickets) = day16input;
+    println!("day16p1: {}", day16::part1(&fields, &adjacent_tickets));
+    println!(
+        "day16p2: {}",
+        day16::part2(&fields, &adjacent_tickets, &my_ticket)
+    );
 }
