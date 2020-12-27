@@ -7,6 +7,7 @@ mod day13;
 mod day14;
 mod day15;
 mod day16;
+mod day17;
 mod day2;
 mod day3;
 mod day4;
@@ -70,4 +71,7 @@ fn main() {
         "day16p2: {}",
         day16::part2(&fields, &adjacent_tickets, &my_ticket)
     );
+    let day17input = day17::parse_input(&mut File::open("day17.input").unwrap());
+    println!("day17p1: {}", day17::part1(&day17input));
+    println!("day17p2: {}", day17::part2(&day17input));
 }
